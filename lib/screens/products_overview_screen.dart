@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shop_app/providers/cart.dart';
+import 'package:shop_app/widgets/badge.dart';
 
 import '../widgets/products_grid.dart';
 
 class ProductsOverviewScreen extends StatefulWidget {
-
   @override
   _ProductsOverviewScreenState createState() => _ProductsOverviewScreenState();
 }
@@ -13,6 +15,8 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    int count = Provider.of<Cart>(context).count;
+
     return Scaffold(
       appBar: AppBar(
         title: Text('MyShop'),
@@ -39,7 +43,8 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
                       child: Text('All'),
                       value: 1,
                     )
-                  ])
+                  ]),
+          Badge(child: Icon(Icons.shopping_cart), value: count.toString())
         ],
       ),
       body: ProductsGrid(_showFavs),
