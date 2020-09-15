@@ -47,7 +47,16 @@ class Cart with ChangeNotifier {
     _items.forEach((key, value) {
       count += value.quantity;
     });
-  
-  return count;
+
+    return count;
+  }
+
+  double get total {
+    double total = 0;
+    _items.forEach((key, value) {
+      total += value.quantity * value.price;
+    });
+
+    return total;
   }
 }
