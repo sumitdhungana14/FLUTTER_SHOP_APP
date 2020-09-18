@@ -10,12 +10,26 @@ class EditProductScreen extends StatefulWidget {
 class _EditProductScreenState extends State<EditProductScreen> {
   final priceFocusNode = FocusNode();
   final descriptionFocusNode = FocusNode();
+  final imageFocusNode = FocusNode();
+  final imageFieldController = TextEditingController();
+
+  @override
+  void initState() {
+    imageFocusNode.addListener(updateImageContainer);
+    super.initState();
+  }
 
   @override
   void dispose() {
     priceFocusNode.dispose();
     descriptionFocusNode.dispose();
+    imageFieldController.dispose();
+    imageFocusNode.removeListener(updateImageContainer);
     super.dispose();
+  }
+
+  void updateImageContainer() {
+    if(!imageFocusNode.hasFocus) setState(() {});
   }
 
   @override
@@ -48,6 +62,32 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 keyboardType: TextInputType.multiline,
                 focusNode: descriptionFocusNode,
               ),
+              Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                Container(
+                  margin: EdgeInsets.only(top: 8, right: 10),
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.green[100], width: 2),
+                  ),
+                  child: imageFieldController.text.isEmpty
+                      ? Text('Enter URL')
+                      : Image.network(imageFieldController.text,
+                          fit: BoxFit.cover),
+                ),
+                Expanded(
+                  child: TextFormField(
+                    decoration: InputDecoration(labelText: 'Image URL'),
+                    keyboardType: TextInputType.url,
+                    textInputAction: TextInputAction.done,
+                    controller: imageFieldController,
+                    onFieldSubmitted: (_) {
+                      setState(() {});
+                    },
+                    focusNode: imageFocusNode,
+                  ),
+                ),
+              ])
             ]),
           ),
         ));
