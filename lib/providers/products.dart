@@ -73,4 +73,9 @@ class Products extends ChangeNotifier {
     });
     return exists;
   }
+
+  void deleteProduct(String id) {
+    _products.removeWhere((product) => product.id == id);
+    notifyListeners();
+  }
 }
