@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shop_app/models/product.dart';
 
 class EditProductScreen extends StatefulWidget {
   static final routeName = '/edit-products';
@@ -12,6 +13,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
   final descriptionFocusNode = FocusNode();
   final imageFocusNode = FocusNode();
   final imageFieldController = TextEditingController();
+  final formKey = GlobalKey<FormState>();
+
+  var newProduct = Product(
+      id: DateTime.now().toString(),
+      title: '',
+      description: '',
+      price: 0,
+      imageUrl: '');
 
   @override
   void initState() {
@@ -29,7 +38,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
   }
 
   void updateImageContainer() {
-    if(!imageFocusNode.hasFocus) setState(() {});
+    if (!imageFocusNode.hasFocus) setState(() {});
+  }
+
+  void saveProduct() {
+    formKey.currentState.save();
   }
 
   @override
@@ -37,16 +50,24 @@ class _EditProductScreenState extends State<EditProductScreen> {
     return Scaffold(
         appBar: AppBar(
           title: Text('Edit Product!'),
+          actions: [IconButton(icon: Icon(Icons.save), onPressed: saveProduct)],
         ),
         body: Padding(
           padding: EdgeInsets.all(16),
           child: Form(
+            key: formKey,
             child: ListView(children: [
               TextFormField(
                 decoration: InputDecoration(labelText: 'Title'),
                 textInputAction: TextInputAction.next,
                 onFieldSubmitted: (_) =>
                     FocusScope.of(context).requestFocus(priceFocusNode),
+                onSaved: (value) => newProduct = Product(
+                    id: newProduct.id,
+                    title: value,
+                    description: newProduct.description,
+                    price: newProduct.price,
+                    imageUrl: newProduct.imageUrl),
               ),
               TextFormField(
                 decoration: InputDecoration(labelText: 'Price'),
@@ -55,12 +76,24 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 focusNode: priceFocusNode,
                 onFieldSubmitted: (_) =>
                     FocusScope.of(context).requestFocus(descriptionFocusNode),
+                onSaved: (value) => newProduct = Product(
+                    id: newProduct.id,
+                    title: newProduct.title,
+                    description: newProduct.description,
+                    price: double.parse(value),
+                    imageUrl: newProduct.imageUrl),
               ),
               TextFormField(
                 decoration: InputDecoration(labelText: 'Description'),
                 maxLines: 4,
                 keyboardType: TextInputType.multiline,
                 focusNode: descriptionFocusNode,
+                onSaved: (value) => newProduct = Product(
+                    id: newProduct.id,
+                    title: newProduct.title,
+                    description: value,
+                    price: newProduct.price,
+                    imageUrl: newProduct.imageUrl),
               ),
               Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
                 Container(
@@ -81,10 +114,17 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     keyboardType: TextInputType.url,
                     textInputAction: TextInputAction.done,
                     controller: imageFieldController,
-                    onFieldSubmitted: (_) {
+                    onChanged: (_) {
                       setState(() {});
                     },
+                    onFieldSubmitted: (_) => saveProduct(),
                     focusNode: imageFocusNode,
+                    onSaved: (value) => newProduct = Product(
+                        id: newProduct.id,
+                        title: newProduct.title,
+                        description: newProduct.description,
+                        price: newProduct.price,
+                        imageUrl: value),
                   ),
                 ),
               ])
