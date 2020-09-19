@@ -42,7 +42,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
   }
 
   void saveProduct() {
-    formKey.currentState.save();
+    var isValidated = formKey.currentState.validate();
+    if (isValidated) formKey.currentState.save();
   }
 
   @override
@@ -68,6 +69,12 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     description: newProduct.description,
                     price: newProduct.price,
                     imageUrl: newProduct.imageUrl),
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Please input title.';
+                  }
+                  return null;
+                },
               ),
               TextFormField(
                 decoration: InputDecoration(labelText: 'Price'),
@@ -82,6 +89,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     description: newProduct.description,
                     price: double.parse(value),
                     imageUrl: newProduct.imageUrl),
+                validator: (value) {
+                  if (value.isEmpty) return 'Please enter price';
+                  if (double.tryParse(value) == null) return 'Please provide a valid number';
+                  if (double.parse(value) <= 0) return 'Price should have positive value';
+  
+                  return null;
+                },
               ),
               TextFormField(
                 decoration: InputDecoration(labelText: 'Description'),
@@ -94,6 +108,15 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     description: value,
                     price: newProduct.price,
                     imageUrl: newProduct.imageUrl),
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Please provide a description.';
+                  }
+                  if (value.length < 10) {
+                    return 'The description should be longer than 10 characters.';
+                  }
+                  return null;
+                },
               ),
               Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
                 Container(
@@ -125,6 +148,12 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         description: newProduct.description,
                         price: newProduct.price,
                         imageUrl: value),
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Please provide an image URL.';
+                      }
+                      return null;
+                    },
                   ),
                 ),
               ])
