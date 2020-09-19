@@ -46,11 +46,31 @@ class Products extends ChangeNotifier {
   }
 
   void addProduct(Product product) {
-    _products.add(product);
+    if (existsById(product.id)) {
+      var currentProduct = findById(product.id);
+      var newProduct = Product(
+          id: currentProduct.id,
+          title: product.title,
+          description: product.description,
+          price: product.price,
+          imageUrl: product.imageUrl);
+      _products.add(newProduct);
+      _products.remove(currentProduct);
+    } else {
+      _products.add(product);
+    }
     notifyListeners();
   }
 
   Product findById(String id) {
     return _products.firstWhere((element) => element.id == id);
+  }
+
+  bool existsById(String id) {
+    var exists = false;
+    _products.forEach((product) {
+      exists = exists || product.id == id;
+    });
+    return exists;
   }
 }
