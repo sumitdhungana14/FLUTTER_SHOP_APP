@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shop_app/models/product.dart';
+import 'package:shop_app/providers/products.dart';
 
 class EditProductScreen extends StatefulWidget {
   static final routeName = '/edit-products';
@@ -14,6 +16,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   final imageFocusNode = FocusNode();
   final imageFieldController = TextEditingController();
   final formKey = GlobalKey<FormState>();
+  final scaffoldKey = GlobalKey<ScaffoldState>();
 
   var newProduct = Product(
       id: DateTime.now().toString(),
@@ -43,15 +46,31 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
   void saveProduct() {
     var isValidated = formKey.currentState.validate();
-    if (isValidated) formKey.currentState.save();
+    if (isValidated) {
+      formKey.currentState.save();
+      Provider.of<Products>(context, listen: false).addProduct(newProduct);
+      formKey.currentState.reset();
+      scaffoldKey.currentState.showSnackBar(SnackBar(
+        content: Text('Product Added!'),
+      ));
+      imageFieldController.clear();
+      setState(() {});
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        key: scaffoldKey,
         appBar: AppBar(
           title: Text('Edit Product!'),
-          actions: [IconButton(icon: Icon(Icons.save), onPressed: saveProduct)],
+          actions: [
+            IconButton(
+                icon: Icon(Icons.save),
+                onPressed: () {
+                  saveProduct();
+                })
+          ],
         ),
         body: Padding(
           padding: EdgeInsets.all(16),
@@ -91,9 +110,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     imageUrl: newProduct.imageUrl),
                 validator: (value) {
                   if (value.isEmpty) return 'Please enter price';
-                  if (double.tryParse(value) == null) return 'Please provide a valid number';
-                  if (double.parse(value) <= 0) return 'Price should have positive value';
-  
+                  if (double.tryParse(value) == null)
+                    return 'Please provide a valid number';
+                  if (double.parse(value) <= 0)
+                    return 'Price should have positive value';
+
                   return null;
                 },
               ),
@@ -136,11 +157,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     decoration: InputDecoration(labelText: 'Image URL'),
                     keyboardType: TextInputType.url,
                     textInputAction: TextInputAction.done,
-                    controller: imageFieldController,
                     onChanged: (_) {
                       setState(() {});
                     },
                     onFieldSubmitted: (_) => saveProduct(),
+                    controller: imageFieldController,
                     focusNode: imageFocusNode,
                     onSaved: (value) => newProduct = Product(
                         id: newProduct.id,
