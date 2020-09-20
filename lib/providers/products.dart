@@ -80,6 +80,7 @@ class Products extends ChangeNotifier {
             imageUrl: value['imageURL']));
       });
       _products = fetchedProducts;
+      notifyListeners();
     } catch (err) {
       throw (err);
     }
