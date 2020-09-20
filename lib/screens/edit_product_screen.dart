@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_app/models/product.dart';
@@ -59,7 +61,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
     if (!imageFocusNode.hasFocus) setState(() {});
   }
 
-  void saveProduct(Products productsContainer) {
+  Future<void> saveProduct(Products productsContainer) async {
     var isValidated = formKey.currentState.validate();
     if (isValidated) {
       formKey.currentState.save();
@@ -71,16 +73,18 @@ class _EditProductScreenState extends State<EditProductScreen> {
         productsContainer.editProduct(newProduct);
         Navigator.of(context).pop();
       } else {
-        productsContainer.addProduct(newProduct).then((_) {
+        try {
+          await productsContainer.addProduct(newProduct);
           Navigator.of(context).pop();
-        }).catchError((err) {
-          setState(() {
-            isProcessing = false;
-          });
+        } catch (err) {
           scaffoldKey.currentState.showSnackBar(SnackBar(
             content: Text(err.toString()),
           ));
-        });
+        } finally {
+          setState(() {
+            isProcessing = false;
+          });
+        }
       }
     }
   }
@@ -98,8 +102,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 ? Center(child: CircularProgressIndicator())
                 : IconButton(
                     icon: Icon(Icons.save),
-                    onPressed: () {
-                      saveProduct(productsContainer);
+                    onPressed: () async {
+                      await saveProduct(productsContainer);
                     })
           ],
         ),
@@ -194,7 +198,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     onChanged: (_) {
                       setState(() {});
                     },
-                    onFieldSubmitted: (_) => saveProduct(productsContainer),
+                    onFieldSubmitted: (_) async {
+                      await saveProduct(productsContainer);
+                    },
                     controller: imageFieldController,
                     focusNode: imageFocusNode,
                     onSaved: (value) => newProduct = Product(
