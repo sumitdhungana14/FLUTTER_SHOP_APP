@@ -35,7 +35,7 @@ class Products extends ChangeNotifier {
     }
   }
 
-  void editProduct(Product product) {
+  Future<void> editProduct(Product product) async {
     var currentProduct = findById(product.id);
     var newProduct = Product(
         id: currentProduct.id,
@@ -43,9 +43,20 @@ class Products extends ChangeNotifier {
         description: product.description,
         price: product.price,
         imageUrl: product.imageUrl);
-    _products.add(newProduct);
-    _products.remove(currentProduct);
-    notifyListeners();
+    try {
+      final url = 'https://shop-app-69c4c.firebaseio.com/products/${product.id}.json';
+      await http.patch(url, body: json.encode({
+        'title': product.title,
+        'description':  product.description,
+        'price': product.price,
+        'imageURL': product.imageUrl
+      }));
+      _products.add(newProduct);
+      _products.remove(currentProduct);
+      notifyListeners();
+    } catch (err) {
+      throw (err);
+    }
   }
 
   Product findById(String id) {

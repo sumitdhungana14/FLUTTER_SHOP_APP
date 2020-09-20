@@ -70,8 +70,18 @@ class _EditProductScreenState extends State<EditProductScreen> {
         isProcessing = true;
       });
       if (action == 'edit') {
-        productsContainer.editProduct(newProduct);
-        Navigator.of(context).pop();
+        try {
+          await productsContainer.editProduct(newProduct);
+          Navigator.of(context).pop();
+        } catch (err) {
+          scaffoldKey.currentState.showSnackBar(SnackBar(
+            content: Text(err.toString()),
+          ));
+        } finally {
+          setState(() {
+            isProcessing = false;
+          });
+        }
       } else {
         try {
           await productsContainer.addProduct(newProduct);
