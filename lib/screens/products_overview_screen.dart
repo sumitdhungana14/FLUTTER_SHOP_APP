@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shop_app/providers/cart.dart';
+import 'package:shop_app/providers/products.dart';
 import 'package:shop_app/widgets/app_drawer.dart';
 import 'package:shop_app/widgets/badge.dart';
 import 'package:shop_app/screens/cart_screen.dart';
@@ -14,6 +15,22 @@ class ProductsOverviewScreen extends StatefulWidget {
 
 class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
   bool _showFavs = false;
+  var _isLoading;
+
+  @override
+  void initState() {
+    _isLoading = true;
+    Future.delayed(Duration.zero).then((_) {
+      Provider.of<Products>(context, listen: false)
+          .getAndSetProducts()
+          .then((_) {
+        setState(() {
+          _isLoading = false;
+        });
+      });
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,14 +64,20 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
           Consumer<Cart>(
             builder: (_, cart, cld) =>
                 Badge(child: cld, value: cart.count.toString()),
-            child: IconButton(icon: Icon(Icons.shopping_cart), onPressed: (){
-              Navigator.of(context).pushNamed(CartScreen.routeName);
-            }),
+            child: IconButton(
+                icon: Icon(Icons.shopping_cart),
+                onPressed: () {
+                  Navigator.of(context).pushNamed(CartScreen.routeName);
+                }),
           ),
         ],
       ),
       drawer: AppDrawer(),
-      body: ProductsGrid(_showFavs),
+      body: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : ProductsGrid(_showFavs),
     );
   }
 }
