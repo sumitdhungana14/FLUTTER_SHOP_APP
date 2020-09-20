@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import '../models/product.dart';
 
 class Products extends ChangeNotifier {
@@ -46,6 +49,8 @@ class Products extends ChangeNotifier {
   }
 
   void addProduct(Product product) {
+    const url = 'https://shop-app-69c4c.firebaseio.com/products.json';
+
     if (existsById(product.id)) {
       var currentProduct = findById(product.id);
       var newProduct = Product(
@@ -57,7 +62,19 @@ class Products extends ChangeNotifier {
       _products.add(newProduct);
       _products.remove(currentProduct);
     } else {
-      _products.add(product);
+      http
+          .post(url,
+              body: json.encode({
+                'title': product.title,
+                'description': product.description,
+                'price': product.price,
+                'imageURL': product.imageUrl
+              }))
+          .then((res) {
+        product.id = json.decode(res.body)['name'];
+        _products.add(product);
+        notifyListeners();
+      });
     }
     notifyListeners();
   }

@@ -22,7 +22,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   var initStage = true;
 
   var newProduct = Product(
-      id: DateTime.now().toString(),
+      id: '',
       title: '',
       description: '',
       price: 0,
