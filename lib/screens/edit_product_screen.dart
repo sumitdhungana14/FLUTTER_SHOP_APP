@@ -20,13 +20,10 @@ class _EditProductScreenState extends State<EditProductScreen> {
   String action;
 
   var initStage = true;
+  var isProcessing = false;
 
-  var newProduct = Product(
-      id: '',
-      title: '',
-      description: '',
-      price: 0,
-      imageUrl: '');
+  var newProduct =
+      Product(id: '', title: '', description: '', price: 0, imageUrl: '');
 
   @override
   void initState() {
@@ -62,36 +59,48 @@ class _EditProductScreenState extends State<EditProductScreen> {
     if (!imageFocusNode.hasFocus) setState(() {});
   }
 
-  void saveProduct() {
+  void saveProduct(Products productsContainer) {
     var isValidated = formKey.currentState.validate();
     if (isValidated) {
       formKey.currentState.save();
-      Provider.of<Products>(context, listen: false).addProduct(newProduct);
+      FocusScope.of(context).unfocus();
+      setState(() {
+        isProcessing = true;
+      });
       if (action == 'edit') {
+        productsContainer.editProduct(newProduct);
         Navigator.of(context).pop();
       } else {
-        formKey.currentState.reset();
-        scaffoldKey.currentState.showSnackBar(SnackBar(
-          content: Text('Product Added!'),
-        ));
-        imageFieldController.clear();
-        FocusScope.of(context).unfocus();
+        productsContainer.addProduct(newProduct).then((_) {
+          Navigator.of(context).pop();
+        }).catchError((err) {
+          setState(() {
+            isProcessing = false;
+          });
+          scaffoldKey.currentState.showSnackBar(SnackBar(
+            content: Text(err.toString()),
+          ));
+        });
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final productsContainer = Provider.of<Products>(context, listen: false);
+
     return Scaffold(
         key: scaffoldKey,
         appBar: AppBar(
           title: Text('Edit Product!'),
           actions: [
-            IconButton(
-                icon: Icon(Icons.save),
-                onPressed: () {
-                  saveProduct();
-                })
+            isProcessing
+                ? Center(child: CircularProgressIndicator())
+                : IconButton(
+                    icon: Icon(Icons.save),
+                    onPressed: () {
+                      saveProduct(productsContainer);
+                    })
           ],
         ),
         body: Padding(
@@ -185,7 +194,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     onChanged: (_) {
                       setState(() {});
                     },
-                    onFieldSubmitted: (_) => saveProduct(),
+                    onFieldSubmitted: (_) => saveProduct(productsContainer),
                     controller: imageFieldController,
                     focusNode: imageFocusNode,
                     onSaved: (value) => newProduct = Product(

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -48,34 +49,36 @@ class Products extends ChangeNotifier {
     return _products.where((element) => element.isFavorite == true).toList();
   }
 
-  void addProduct(Product product) {
+  Future<void> addProduct(Product product) {
     const url = 'https://shop-app-69c4c.firebaseio.com/products.json';
 
-    if (existsById(product.id)) {
-      var currentProduct = findById(product.id);
-      var newProduct = Product(
-          id: currentProduct.id,
-          title: product.title,
-          description: product.description,
-          price: product.price,
-          imageUrl: product.imageUrl);
-      _products.add(newProduct);
-      _products.remove(currentProduct);
-    } else {
-      http
-          .post(url,
-              body: json.encode({
-                'title': product.title,
-                'description': product.description,
-                'price': product.price,
-                'imageURL': product.imageUrl
-              }))
-          .then((res) {
-        product.id = json.decode(res.body)['name'];
-        _products.add(product);
-        notifyListeners();
-      });
-    }
+    return http
+        .post(url,
+            body: json.encode({
+              'title': product.title,
+              'description': product.description,
+              'price': product.price,
+              'imageURL': product.imageUrl
+            }))
+        .then((res) {
+      product.id = json.decode(res.body)['name'];
+      _products.add(product);
+      notifyListeners();
+    }).catchError((err) {
+      throw err;
+    });
+  }
+
+  void editProduct(Product product) {
+    var currentProduct = findById(product.id);
+    var newProduct = Product(
+        id: currentProduct.id,
+        title: product.title,
+        description: product.description,
+        price: product.price,
+        imageUrl: product.imageUrl);
+    _products.add(newProduct);
+    _products.remove(currentProduct);
     notifyListeners();
   }
 
