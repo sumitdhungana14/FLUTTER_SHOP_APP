@@ -12,7 +12,6 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
-  var isSubmitting = false;
   var scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -39,30 +38,10 @@ class _CartScreenState extends State<CartScreen> {
                     children: [
                       Text('Total'),
                       Chip(label: Text('\$${cartProvider.total}')),
-                      Consumer<Orders>(
-                        builder: (_, orders, __) => FlatButton(
-                          onPressed: () async {
-                            try {
-                              setState(() {
-                                isSubmitting = true;
-                              });
-                              await orders.addOrder(items, cartProvider.total);
-                              cartProvider.clear();
-                            } catch (err) {
-                              scaffoldKey.currentState.showSnackBar(SnackBar(
-                                content: Text('Can\'t order at this moment!'),
-                              ));
-                            }
-                            setState(() {
-                              isSubmitting = false;
-                            });
-                          },
-                          child: isSubmitting
-                              ? Center(child: CircularProgressIndicator())
-                              : Text('Order Now'),
-                          color: Colors.blue[100],
-                        ),
-                      )
+                      OrderButton(
+                          cartProvider: cartProvider,
+                          items: items,
+                          scaffoldKey: scaffoldKey)
                     ]),
               ),
             ),
@@ -79,6 +58,59 @@ class _CartScreenState extends State<CartScreen> {
             )
           ],
         ),
+      ),
+    );
+  }
+}
+
+class OrderButton extends StatefulWidget {
+  const OrderButton({
+    Key key,
+    @required this.cartProvider,
+    @required this.items,
+    @required this.scaffoldKey,
+  }) : super(key: key);
+
+  final Cart cartProvider;
+  final List<CartItem> items;
+  final GlobalKey<ScaffoldState> scaffoldKey;
+
+  @override
+  _OrderButtonState createState() => _OrderButtonState();
+}
+
+class _OrderButtonState extends State<OrderButton> {
+  var _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<Orders>(
+      builder: (_, orders, __) => FlatButton(
+        onPressed: (widget.cartProvider.total <= 0 || _isLoading)
+            ? null
+            : () async {
+                try {
+                  setState(() {
+                    _isLoading = true;
+                  });
+                  await orders.addOrder(
+                      widget.items, widget.cartProvider.total);
+                  widget.cartProvider.clear();
+                } catch (err) {
+                  widget.scaffoldKey.currentState.showSnackBar(SnackBar(
+                    content: Text('Can\'t order at this moment!'),
+                  ));
+                }
+                setState(() {
+                  _isLoading = false;
+                });
+              },
+        child: _isLoading
+            ? Center(
+                child: CircularProgressIndicator(),
+              )
+            : Text('Order Now'),
+        color: Colors.blue[100],
       ),
     );
   }
