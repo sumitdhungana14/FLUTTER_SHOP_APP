@@ -4,8 +4,16 @@ import 'package:shop_app/providers/cart.dart';
 import 'package:shop_app/providers/orders.dart';
 import 'package:shop_app/widgets/cart_item.dart' as ci;
 
-class CartScreen extends StatelessWidget {
+class CartScreen extends StatefulWidget {
   static final routeName = "/cart";
+
+  @override
+  _CartScreenState createState() => _CartScreenState();
+}
+
+class _CartScreenState extends State<CartScreen> {
+  var isSubmitting = false;
+  var scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +22,7 @@ class CartScreen extends StatelessWidget {
     final keys = cartProvider.items.keys.toList();
 
     return Scaffold(
+      key: scaffoldKey,
       appBar: AppBar(
         title: Text('Your Cart!'),
       ),
@@ -32,11 +41,25 @@ class CartScreen extends StatelessWidget {
                       Chip(label: Text('\$${cartProvider.total}')),
                       Consumer<Orders>(
                         builder: (_, orders, __) => FlatButton(
-                          onPressed: () {
-                            orders.addOrder(items, cartProvider.total);
-                            cartProvider.clear();
+                          onPressed: () async {
+                            try {
+                              setState(() {
+                                isSubmitting = true;
+                              });
+                              await orders.addOrder(items, cartProvider.total);
+                              cartProvider.clear();
+                            } catch (err) {
+                              scaffoldKey.currentState.showSnackBar(SnackBar(
+                                content: Text('Can\'t order at this moment!'),
+                              ));
+                            }
+                            setState(() {
+                              isSubmitting = false;
+                            });
                           },
-                          child: Text('Order Now'),
+                          child: isSubmitting
+                              ? Center(child: CircularProgressIndicator())
+                              : Text('Order Now'),
                           color: Colors.blue[100],
                         ),
                       )
