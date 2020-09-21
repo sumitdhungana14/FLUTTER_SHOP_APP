@@ -25,7 +25,8 @@ class Products extends ChangeNotifier {
             'title': product.title,
             'description': product.description,
             'price': product.price,
-            'imageURL': product.imageUrl
+            'imageURL': product.imageUrl,
+            'isFavorite': product.isFavorite
           }));
       product.id = json.decode(res.body)['name'];
       _products.add(product);
@@ -44,13 +45,16 @@ class Products extends ChangeNotifier {
         price: product.price,
         imageUrl: product.imageUrl);
     try {
-      final url = 'https://shop-app-69c4c.firebaseio.com/products/${product.id}.json';
-      await http.patch(url, body: json.encode({
-        'title': product.title,
-        'description':  product.description,
-        'price': product.price,
-        'imageURL': product.imageUrl
-      }));
+      final url =
+          'https://shop-app-69c4c.firebaseio.com/products/${product.id}.json';
+      await http.patch(url,
+          body: json.encode({
+            'title': product.title,
+            'description': product.description,
+            'price': product.price,
+            'imageURL': product.imageUrl,
+            'isFavorite': product.isFavorite
+          }));
       _products.add(newProduct);
       _products.remove(currentProduct);
       notifyListeners();
@@ -71,9 +75,22 @@ class Products extends ChangeNotifier {
     return exists;
   }
 
-  void deleteProduct(String id) {
-    _products.removeWhere((product) => product.id == id);
-    notifyListeners();
+  Future<void> deleteProduct(String id) async {
+    try {
+      final url = 'https://shop-app-69c4c.firebaseio.com/products/$id';
+      var productIndex = _products.indexWhere((product) => product.id == id);
+      var productToDelete = _products[productIndex];
+      _products.removeAt(productIndex);
+      notifyListeners();
+      var res = await http.delete(url);
+      if (res.statusCode >= 400) {
+        _products.insert(productIndex, productToDelete);
+        notifyListeners();
+        throw Exception();
+      }
+    } catch (err) {
+      throw (err);
+    }
   }
 
   Future<void> getAndSetProducts() async {
@@ -88,7 +105,8 @@ class Products extends ChangeNotifier {
             title: value['title'],
             description: value['description'],
             price: value['price'],
-            imageUrl: value['imageURL']));
+            imageUrl: value['imageURL'],
+            isFavorite: value['isFavorite']));
       });
       _products = fetchedProducts;
       notifyListeners();
