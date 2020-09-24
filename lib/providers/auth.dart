@@ -115,10 +115,12 @@ class Auth with ChangeNotifier {
       return false;
     }
 
-    final userData = prefs.getString('userData') as Map<String, String>;
+    final userData =
+        json.decode(prefs.getString('userData')) as Map<String, Object>;
     final extractedExpiryDate = DateTime.parse(userData['expiryDate']);
 
-    if (extractedExpiryDate.isAfter(DateTime.now())) {
+    if (extractedExpiryDate.isBefore(DateTime.now())) {
+      prefs.remove('userData');
       return false;
     }
 
