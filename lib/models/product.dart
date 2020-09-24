@@ -20,8 +20,14 @@ class Product extends ChangeNotifier {
     this.isFavorite = false,
   });
 
+  String authToken;
+
+  void setAuth(String authToken) {
+    this.authToken = authToken;
+  }
+
   void toggleFavorite() {
-    final url = 'https://shop-app-69c4c.firebaseio.com/products/$id.json';
+    final url = 'https://shop-app-69c4c.firebaseio.com/products/$id.json?auth=$authToken';
     http
         .patch(url, body: json.encode({'isFavorite': !this.isFavorite}))
         .then((res) {

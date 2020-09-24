@@ -9,7 +9,7 @@ class Products extends ChangeNotifier {
   List<Product> _products = [];
   String authToken;
 
-  void setValue(String authToken) {
+  void setAuth(String authToken) {
     this.authToken = authToken;
   }
 
@@ -22,7 +22,7 @@ class Products extends ChangeNotifier {
   }
 
   Future<void> addProduct(Product product) async {
-    const url = 'https://shop-app-69c4c.firebaseio.com/products.json';
+    final url = 'https://shop-app-69c4c.firebaseio.com/products.json?auth=$authToken';
 
     try {
       var res = await http.post(url,
@@ -51,7 +51,7 @@ class Products extends ChangeNotifier {
         imageUrl: product.imageUrl);
     try {
       final url =
-          'https://shop-app-69c4c.firebaseio.com/products/${product.id}.json';
+          'https://shop-app-69c4c.firebaseio.com/products/${product.id}.json?auth=$authToken';
       await http.patch(url,
           body: json.encode({
             'title': product.title,
@@ -82,7 +82,7 @@ class Products extends ChangeNotifier {
 
   Future<void> deleteProduct(String id) async {
     try {
-      final url = 'https://shop-app-69c4c.firebaseio.com/products/$id';
+      final url = 'https://shop-app-69c4c.firebaseio.com/products/$id?auth=$authToken';
       var productIndex = _products.indexWhere((product) => product.id == id);
       var productToDelete = _products[productIndex];
       _products.removeAt(productIndex);
