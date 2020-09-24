@@ -7,6 +7,11 @@ import '../models/product.dart';
 
 class Products extends ChangeNotifier {
   List<Product> _products = [];
+  String authToken;
+
+  void setValue(String authToken) {
+    this.authToken = authToken;
+  }
 
   List<Product> get products {
     return [..._products];
@@ -95,7 +100,7 @@ class Products extends ChangeNotifier {
 
   Future<void> getAndSetProducts() async {
     List<Product> fetchedProducts = [];
-    const url = 'https://shop-app-69c4c.firebaseio.com/products.json';
+    final url = 'https://shop-app-69c4c.firebaseio.com/products.json?auth=$authToken';
     try {
       var res = await http.get(url);
       var importedData = json.decode(res.body) as Map<String, dynamic>;
